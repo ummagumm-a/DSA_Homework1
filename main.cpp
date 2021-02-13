@@ -8,13 +8,11 @@
 
 using namespace std;
 
-int main() {
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
-}
+template <typename T>
+class List {};
 
 template <typename T>
-class SortedList
+class SortedList : List<T>
 {
     virtual void add(T item) = 0;
     virtual T least() = 0;
@@ -22,7 +20,7 @@ class SortedList
     virtual T get(int i) = 0;
     virtual int indexOf(T item) = 0;
     virtual void remove(int i) = 0;
-    virtual SortedList<T> searchRange(T from, T to) = 0;
+    virtual List<T> searchRange(T from, T to) = 0;
     virtual int size() = 0;
     virtual bool isEmpty() = 0;
 };
@@ -31,38 +29,53 @@ template <typename T>
 class LinkedSortedList : SortedList<T>
 {
 public:
+
+    // default constructor for LinkedSortedList
     LinkedSortedList()
     {
-        struct Node initial = { NULL, nullptr };
-        first = &initial;
-        last = &initial;
+        // make a fictitious first node
+        // we assume that value of this node is always less then the value of the first item
+        auto emptyNode = new Node();
+        first = emptyNode;
     }
 
+    // add a new element to the List
     void add(T item)
     {
-        if (first->data == NULL)
+        listSize++; // increase the size of the list
+
+        // if the list is empty we simply insert the item
+        if (listSize == 0)
         {
-            first->data = item;
+            auto newNode = new Node();
+            last = newNode; // automatically, it is the last one
+            newNode->data = item;
+            newNode->next = nullptr;
+            return;
         }
 
-        struct Node *currentNode = first;
+        // go through each node until we find the one that is greater than the item
+        auto *currentNode = first;
         while (currentNode->next != nullptr && item > currentNode->next->data)
         {
             currentNode = currentNode->next;
         }
 
-        struct Node newNode = { item, currentNode->next };
-        currentNode->next = &newNode;
+        // insert the item right before the found node
+        auto newNode = new Node();
+        *newNode = { item, currentNode->next };
+        currentNode->next = newNode;
 
-        if (newNode.next == nullptr)
+        // if the item was inserted at the end, update the last-pointer
+        if (newNode->next == nullptr)
         {
-            last = &newNode;
+            last = newNode;
         }
     }
 
     T least()
     {
-        return first->data;
+        return first->next->data;
     }
 
     T greatest()
@@ -85,7 +98,7 @@ public:
 
     }
 
-    LinkedSortedList<T> searchRange(T from, T to)
+    List<T> searchRange(T from, T to)
     {
 
     }
@@ -99,14 +112,39 @@ public:
     {
         return listSize == 0;
     }
+public:
+    void printAll()
+    {
+        auto *currentNode = first->next;
+
+        while (currentNode != nullptr)
+        {
+            cout << currentNode->data << endl;
+            currentNode = currentNode->next;
+        }
+    }
 private:
     struct Node
     {
         T data;
-        struct Node* next;
+        struct Node *next;
     };
 
-    struct Node* first;
-    struct Node* last;
+    Node* first;
+    Node* last;
     unsigned int listSize = 0;
 };
+
+int main() {
+    LinkedSortedList<string> list;
+
+    list.add("babuy");
+    list.add("monkey");
+    list.add("abs");
+    list.add("zorro");
+    list.add("kilo");
+    list.add("nigga");
+
+
+    return 0;
+}
