@@ -5,8 +5,20 @@
  */
 
 #include <iostream>
+#include <exception>
 
 using namespace std;
+
+namespace exceptions
+{
+    class IndexOutOfBoundsException : public exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "Index out of bounds!";
+        }
+    };
+}
 
 template <typename T>
 class List {};
@@ -95,7 +107,22 @@ public:
 
     void remove(int i)
     {
+        // raise an exception if i is invalid
+        if (i < 0 || i >= listSize) throw exceptions::IndexOutOfBoundsException();
 
+        // go to i'th element
+        auto *currentNode = first;
+
+        for (int j = 0; j < i; ++j) {
+            currentNode = currentNode->next;
+        }
+
+        // delete it
+        delete &currentNode->next->data;
+        currentNode->next = currentNode->next->next;
+
+        // decrease the size of the array
+        listSize--;
     }
 
     List<T> searchRange(T from, T to)
@@ -122,6 +149,8 @@ public:
             cout << currentNode->data << endl;
             currentNode = currentNode->next;
         }
+
+        cout << endl;
     }
 private:
     struct Node
@@ -138,13 +167,21 @@ private:
 int main() {
     LinkedSortedList<string> list;
 
-    list.add("babuy");
+    list.add("baby");
     list.add("monkey");
     list.add("abs");
     list.add("zorro");
     list.add("kilo");
     list.add("nigga");
 
+    list.printAll();
+    try {
+        list.remove(6);
+    } catch (exception& e) {
+        cout << e.what() << endl;
+    }
+
+    list.printAll();
 
     return 0;
 }
